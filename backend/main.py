@@ -1,5 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from typing import List
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.deps import get_db
+from app.models import Plan
+from app.schemas import PlanOut
 from app.core.config import APP_NAME, API_VERSION, ENV
 
 app = FastAPI(title=APP_NAME, version=API_VERSION)
@@ -19,3 +25,7 @@ def health():
 @app.get("/version")
 def version():
     return {"name": APP_NAME, "version": API_VERSION, "env": ENV}
+
+@app.get("/plans", response_model=List[PlanOut])
+def list_plans(db: Session = Depends(get_db)):
+    return db.query(Plan).order_by(Plan.id).all()
